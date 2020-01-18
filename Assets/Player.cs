@@ -17,17 +17,22 @@ public class Player : MonoBehaviour
 	public Sprite[] sprites;
 	int currentSprite = 0;
 	float timeOfSwap;
+
+	private Joystick joystick;
+	private bool isMobile = false;
 	
 	// Start is called before the first frame update
 	void Start()
     {
 		sr = GetComponent<SpriteRenderer>();
+		joystick = FindObjectOfType<Joystick>();
+		if (Application.platform == RuntimePlatform.Android) isMobile = true;
 	}
 
     // Update is called once per frame
     void FixedUpdate()
     {
-		if (isMovementEnabled)
+		if (isMovementEnabled && !isMobile)
 		{
 			if (Input.GetButton("left") && transform.position.x > -1.0594f)
 			{
@@ -38,9 +43,13 @@ public class Player : MonoBehaviour
 				transform.Translate(Time.deltaTime * playerSpeed, 0, 0);
 			}
 		}
-		if (isFiringEnabled && Input.GetButton("Jump") && existingBullet == null)
+		else if (isMovementEnabled && isMobile)
 		{
-			existingBullet = Instantiate(bullet, transform.position + offset, Quaternion.identity);
+			transform.Translate(joystick.Horizontal * Time.deltaTime * playerSpeed, 0, 0);
+		}
+		if (Input.GetButton("Jump"))
+		{
+			Fire();
 		}
 		if (isAlive && currentSprite != 0)
 		{
@@ -63,6 +72,14 @@ public class Player : MonoBehaviour
 				}
 				timeOfSwap = Time.time;
 			}
+		}
+	}
+
+	public void Fire()
+	{
+		if (isFiringEnabled && existingBullet == null)
+		{
+			existingBullet = Instantiate(bullet, transform.position + offset, Quaternion.identity);
 		}
 	}
 
